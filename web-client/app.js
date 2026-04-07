@@ -1,6 +1,7 @@
 // TaskFlow Web Client - Version 1
 
-const API_BASE_URL = window.location.origin;
+// Use backend URL directly since we're opening file locally
+const API_BASE_URL = 'http://localhost:8000';
 const API_KEY = 'taskflow_api_key_change_this';
 
 // DOM Elements
