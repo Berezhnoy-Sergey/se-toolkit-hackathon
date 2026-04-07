@@ -20,9 +20,8 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # opentelemetry-instrument already installed the LoggingHandler on the root logger
-    # (via OTEL_LOGS_EXPORTER=otlp). We only need to fix uvicorn.access, which has
-    # propagate=False by default, so its HTTP access lines reach the OTel handler.
+    from lms_backend.database import create_db_and_tables
+    create_db_and_tables()
     logging.getLogger("uvicorn.access").propagate = True
     yield
 
@@ -38,50 +37,21 @@ app = FastAPI(
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
-    """Return error details in the response for easier debugging."""
     tb = traceback.format_exception(type(exc), exc, exc.__traceback__)
-    logger.exception(
-        "unhandled_exception",
-        extra={"event": "unhandled_exception", "path": request.url.path},
-    )
+    logger.exception("unhandled_exception")
     return JSONResponse(
         status_code=500,
         content={
             "detail": str(exc),
             "type": type(exc).__name__,
             "path": request.url.path,
-            "traceback": tb[-3:],  # last 3 lines of traceback
         },
     )
 
 
 @app.middleware("http")
-async def log_requests(
-    request: Request, call_next: RequestResponseEndpoint
-) -> Response:
-    logger.info(
-        "request_started",
-        extra={
-            "event": "request_started",
-            "method": request.method,
-            "path": request.url.path,
-        },
-    )
-    t0 = time.perf_counter()
+async def log_requests(request: Request, call_next: RequestResponseEndpoint) -> Response:
     response = await call_next(request)
-    duration_ms = round((time.perf_counter() - t0) * 1000)
-    level = logging.ERROR if response.status_code >= 500 else logging.INFO
-    logger.log(
-        level,
-        "request_completed",
-        extra={
-            "event": "request_completed",
-            "method": request.method,
-            "path": request.url.path,
-            "status": response.status_code,
-            "duration_ms": duration_ms,
-        },
-    )
     return response
 
 

@@ -1,7 +1,7 @@
 // TaskFlow Web Client - Version 1
 
 const API_BASE_URL = window.location.origin;
-const API_KEY = 'taskflow_api_key_change_this'; // In production, get this from env or login
+const API_KEY = 'taskflow_api_key_change_this';
 
 // DOM Elements
 const chatMessages = document.getElementById('chat-messages');
@@ -50,9 +50,7 @@ async function createTask(title, description = '', priority = 0) {
 async function getTasks() {
     try {
         const response = await fetch(`${API_BASE_URL}/api/tasks/`, {
-            headers: {
-                'X-API-Key': API_KEY
-            }
+            headers: { 'X-API-Key': API_KEY }
         });
         
         if (!response.ok) throw new Error('Failed to fetch tasks');
@@ -67,9 +65,7 @@ async function completeTask(taskId) {
     try {
         const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}/complete`, {
             method: 'POST',
-            headers: {
-                'X-API-Key': API_KEY
-            }
+            headers: { 'X-API-Key': API_KEY }
         });
         
         if (!response.ok) throw new Error('Failed to complete task');
@@ -81,7 +77,6 @@ async function completeTask(taskId) {
 }
 
 // Simple AI interpretation (Version 1 - basic pattern matching)
-// In Version 2, this would be replaced with actual nanobot integration
 async function interpretUserMessage(message) {
     message = message.toLowerCase().trim();
     
@@ -90,7 +85,6 @@ async function interpretUserMessage(message) {
         let title = message.replace('add task:', '').replace('add ', '').trim();
         title = title.charAt(0).toUpperCase() + title.slice(1);
         
-        // Check for priority keywords
         let priority = 0;
         if (message.includes('high priority')) priority = 3;
         else if (message.includes('medium priority')) priority = 2;
@@ -128,7 +122,6 @@ async function interpretUserMessage(message) {
         const tasks = await getTasks();
         const activeTasks = tasks.filter(t => t.status === 'active');
         
-        // Try to match task title
         let matchedTask = null;
         for (const task of activeTasks) {
             if (message.includes(task.title.toLowerCase())) {
@@ -243,7 +236,6 @@ chatInput.addEventListener('keypress', (e) => {
 
 refreshTasksBtn.addEventListener('click', loadTasks);
 
-// Make handleCompleteTask available globally
 window.handleCompleteTask = handleCompleteTask;
 
 // Load tasks on page load

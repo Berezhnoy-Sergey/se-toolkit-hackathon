@@ -1,31 +1,15 @@
-"""API key authentication dependency."""
+"""Simple API key verification for TaskFlow."""
 
-import logging
-
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
-from lms_backend.settings import settings
-
-logger = logging.getLogger(__name__)
-
-security = HTTPBearer()
+from fastapi import Header, HTTPException, status
 
 
-def verify_api_key(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-) -> str:
-    """Verify the API key from the Authorization header.
-
-    Expects: Authorization: Bearer <API_KEY>
-    Returns the key string if valid.
-    Raises 401 if invalid.
-    """
-    if credentials.credentials != settings.api_key:
-        logger.warning("auth_failure", extra={"event": "auth_failure"})
+def verify_api_key(x_api_key: str = Header(None)):
+    """Verify the API key from the X-API-Key header."""
+    from lms_backend.settings import settings
+    
+    if x_api_key != settings.api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid API key",
+            detail="Invalid or missing API key",
         )
-    logger.info("auth_success", extra={"event": "auth_success"})
-    return credentials.credentials
+    return x_api_key

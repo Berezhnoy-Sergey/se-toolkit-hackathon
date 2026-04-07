@@ -3,21 +3,25 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    app_name: str = Field(..., alias="NAME")
-    debug: bool = Field(..., alias="DEBUG")
-    address: str = Field(..., alias="ADDRESS")
-    port: int = Field(..., alias="PORT")
-    reload: bool = Field(..., alias="RELOAD")
-
-    api_key: str = Field(..., alias="LMS_API_KEY")
-
-    cors_origins: list[str] = Field(..., alias="CORS_ORIGINS")
-
-    db_host: str = Field(..., alias="DB_HOST")
-    db_port: int = Field(..., alias="DB_PORT")
-    db_name: str = Field(..., alias="DB_NAME")
-    db_user: str = Field(..., alias="DB_USER")
-    db_password: str = Field(..., alias="DB_PASSWORD")
+    # App settings
+    app_name: str = "TaskFlow"
+    debug: bool = False
+    
+    # Server settings
+    address: str = "0.0.0.0"
+    port: int = 8000
+    
+    # API key (simple version)
+    api_key: str = "taskflow_api_key_change_this"
+    
+    # CORS
+    cors_origins: list[str] = ["*"]
+    
+    # Database
+    db_url: str = Field(
+        default="postgresql://taskflow:taskflow_password@postgres:5432/taskflow",
+        alias="DATABASE_URL"
+    )
 
 
 settings = Settings.model_validate({})
