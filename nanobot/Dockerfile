@@ -15,7 +15,7 @@ COPY mcp/mcp-tasks/ ./mcp/mcp-tasks/
 COPY nanobot/ ./nanobot/
 
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen
+    uv sync
 
 ARG REGISTRY_PREFIX_DOCKER_HUB
 FROM ${REGISTRY_PREFIX_DOCKER_HUB:-}python:3.14.2-slim-bookworm
