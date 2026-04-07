@@ -1,0 +1,64 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+.venv
+.direnv
+
+# Node
+node_modules
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# Environment files (don't copy secrets into images)
+.env
+.env.docker.secret
+.env.example
+
+# Documentation (except README)
+*.md
+!README.md
+
+# Test files
+tests
+test
+*.test.*
+.env.tests.*
+
+# Scripts (not needed in production)
+scripts/
+
+# Lab documentation
+lab/
+instructors/
+contributing/
+wiki/
+docs/
+
+# Other client implementations not used in v1
+client-web-react/
+client-telegram-bot/
+nanobot-websocket-channel/
+
+# Observability (not used in v1)
+otel-collector/
+victorialogs/
+victoriatraces/
+qwen-code-api/

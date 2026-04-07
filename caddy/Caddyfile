@@ -1,0 +1,16 @@
+:{$CADDY_CONTAINER_PORT:-80} {
+    handle /api/tasks* {
+        reverse_proxy http://backend:{$BACKEND_CONTAINER_PORT:-8000}
+    }
+    handle /docs* {
+        reverse_proxy http://backend:{$BACKEND_CONTAINER_PORT:-8000}
+    }
+    handle /openapi.json {
+        reverse_proxy http://backend:{$BACKEND_CONTAINER_PORT:-8000}
+    }
+    handle {
+        root * /srv/web
+        try_files {path} /index.html
+        file_server
+    }
+}

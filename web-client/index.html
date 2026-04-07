@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - AI Task Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 TaskFlow</h1>
+            <p class="subtitle">AI-Powered Personal Task Manager</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Chat Section -->
+            <div class="chat-section">
+                <h2>Chat with AI Assistant</h2>
+                <div id="chat-messages" class="messages"></div>
+                <div class="chat-input">
+                    <input type="text" id="chat-input" placeholder="Type a message... (e.g., 'Add task: Buy groceries')" />
+                    <button id="send-btn">Send</button>
+                </div>
+            </div>
+
+            <!-- Task List Section -->
+            <div class="task-section">
+                <h2>Your Tasks</h2>
+                <div id="task-list" class="task-list"></div>
+                <button id="refresh-tasks" class="btn-secondary">Refresh Tasks</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
