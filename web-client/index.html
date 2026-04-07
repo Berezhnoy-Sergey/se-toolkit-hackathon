@@ -27,6 +27,14 @@
             <!-- Task List Section -->
             <div class="task-section">
                 <h2>Your Tasks</h2>
+                
+                <!-- Filter Buttons -->
+                <div id="filter-buttons" class="filter-bar">
+                    <button id="filter-all" class="filter-btn active" onclick="setFilter('all')">All</button>
+                    <button id="filter-active" class="filter-btn" onclick="setFilter('active')">Active</button>
+                    <button id="filter-completed" class="filter-btn" onclick="setFilter('completed')">Completed</button>
+                </div>
+                
                 <div id="task-list" class="task-list"></div>
                 <button id="refresh-tasks" class="btn-secondary">Refresh Tasks</button>
             </div>

@@ -1,4 +1,4 @@
-// TaskFlow Web Client - Version 1
+// TaskFlow Web Client - Version 2
 
 // Use backend URL directly since we're opening file locally
 const API_BASE_URL = 'http://localhost:8000';
@@ -10,6 +10,9 @@ const chatInput = document.getElementById('chat-input');
 const sendBtn = document.getElementById('send-btn');
 const taskList = document.getElementById('task-list');
 const refreshTasksBtn = document.getElementById('refresh-tasks');
+const filterButtons = document.getElementById('filter-buttons');
+
+let currentFilter = 'all';
 
 // Utility functions
 function addMessage(content, type = 'ai') {
@@ -50,7 +53,12 @@ async function createTask(title, description = '', priority = 0) {
 
 async function getTasks() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/tasks/`, {
+        let url = `${API_BASE_URL}/api/tasks/`;
+        if (currentFilter !== 'all') {
+            url += `?status_filter=${currentFilter}`;
+        }
+        
+        const response = await fetch(url, {
             headers: { 'X-API-Key': API_KEY }
         });
         
@@ -58,6 +66,25 @@ async function getTasks() {
         return await response.json();
     } catch (error) {
         console.error('Error fetching tasks:', error);
+        throw error;
+    }
+}
+
+async function updateTask(taskId, updates) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': API_KEY
+            },
+            body: JSON.stringify(updates)
+        });
+        
+        if (!response.ok) throw new Error('Failed to update task');
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating task:', error);
         throw error;
     }
 }
@@ -75,6 +102,34 @@ async function completeTask(taskId) {
         console.error('Error completing task:', error);
         throw error;
     }
+}
+
+async function deleteTask(taskId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
+            method: 'DELETE',
+            headers: { 'X-API-Key': API_KEY }
+        });
+        
+        if (!response.ok) throw new Error('Failed to delete task');
+        return true;
+    } catch (error) {
+        console.error('Error deleting task:', error);
+        throw error;
+    }
+}
+
+// Filter functions
+async function setFilter(filter) {
+    currentFilter = filter;
+    
+    // Update button styles
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.getElementById(`filter-${filter}`).classList.add('active');
+    
+    await loadTasks();
 }
 
 // Simple AI interpretation (Version 1 - basic pattern matching)
@@ -169,7 +224,10 @@ function renderTask(tasks) {
     taskList.innerHTML = '';
     
     if (tasks.length === 0) {
-        taskList.innerHTML = '<div class="loading">No tasks yet. Create one in the chat!</div>';
+        const message = currentFilter === 'all' 
+            ? 'No tasks yet. Create one in the chat!'
+            : `No ${currentFilter} tasks found.`;
+        taskList.innerHTML = `<div class="loading">${message}</div>`;
         return;
     }
     
@@ -186,12 +244,29 @@ function renderTask(tasks) {
             <div class="task-meta">
                 <span class="task-priority ${priorityClass}">${getPriorityLabel(task.priority)}</span>
                 <span>${createdDate}</span>
-                ${task.status === 'active' ? `<button class="complete-btn" onclick="handleCompleteTask(${task.id})">✓ Complete</button>` : '<span>✅ Completed</span>'}
+                <div class="task-actions">
+                    ${task.status === 'active' ? `<button class="action-btn complete-btn" onclick="handleCompleteTask(${task.id})">✓</button>` : '<span class="completed-badge">✅</span>'}
+                    <button class="action-btn delete-btn" onclick="handleDeleteTask(${task.id})">🗑</button>
+                </div>
             </div>
         `;
         
         taskList.appendChild(taskDiv);
     });
+}
+
+async function handleDeleteTask(taskId) {
+    if (!confirm('Are you sure you want to delete this task?')) {
+        return;
+    }
+    
+    try {
+        await deleteTask(taskId);
+        addMessage('🗑 Task deleted');
+        await loadTasks();
+    } catch (error) {
+        addMessage(`❌ Error: ${error.message}`);
+    }
 }
 
 async function loadTasks() {

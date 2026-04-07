@@ -136,6 +136,38 @@ button:hover {
     background: #38a169;
 }
 
+/* Filter Buttons */
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.filter-btn {
+    flex: 1;
+    padding: 10px;
+    background: #e0e0e0;
+    color: #666;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.filter-btn:hover {
+    background: #667eea;
+    color: white;
+}
+
+.filter-btn.active {
+    background: #667eea;
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+/* Task Actions */
+
 .task-list {
     max-height: 400px;
     overflow-y: auto;
@@ -193,14 +225,43 @@ button:hover {
 .priority-2 { background: #fef5e7; color: #c27806; }
 .priority-3 { background: #fed7d7; color: #c53030; }
 
+.task-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.action-btn {
+    padding: 6px 10px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+}
+
 .complete-btn {
-    padding: 6px 12px;
-    font-size: 0.8rem;
     background: #48bb78;
+    color: white;
 }
 
 .complete-btn:hover {
     background: #38a169;
+    transform: scale(1.1);
+}
+
+.delete-btn {
+    background: #f56565;
+    color: white;
+}
+
+.delete-btn:hover {
+    background: #e53e3e;
+    transform: scale(1.1);
+}
+
+.completed-badge {
+    font-size: 1.2rem;
 }
 
 .loading {
