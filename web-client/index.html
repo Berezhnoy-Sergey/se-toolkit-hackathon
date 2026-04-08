@@ -3,41 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskFlow - AI Task Manager</title>
+    <title>TaskFlow - Task Manager</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🚀 TaskFlow</h1>
-            <p class="subtitle">AI-Powered Personal Task Manager</p>
+            <p class="subtitle">Personal Task Manager</p>
         </header>
 
-        <div class="main-content">
-            <!-- Chat Section -->
-            <div class="chat-section">
-                <h2>Chat with AI Assistant</h2>
-                <div id="chat-messages" class="messages"></div>
-                <div class="chat-input">
-                    <input type="text" id="chat-input" placeholder="Type a message... (e.g., 'Add task: Buy groceries')" />
-                    <button id="send-btn">Send</button>
+        <!-- Auth Section -->
+        <div id="auth-section" class="auth-container">
+            <div class="auth-box">
+                <div class="auth-tabs">
+                    <button id="login-tab" class="auth-tab active" onclick="switchTab('login')">Login</button>
+                    <button id="register-tab" class="auth-tab" onclick="switchTab('register')">Register</button>
                 </div>
+
+                <!-- Login Form -->
+                <div id="login-form" class="auth-form">
+                    <h2>Welcome Back!</h2>
+                    <input type="text" id="login-username" placeholder="Username" required />
+                    <input type="password" id="login-password" placeholder="Password" required />
+                    <button id="login-btn" onclick="handleLogin()">Login</button>
+                    <div id="login-error" class="error-message"></div>
+                </div>
+
+                <!-- Register Form -->
+                <div id="register-form" class="auth-form" style="display:none">
+                    <h2>Create Account</h2>
+                    <input type="text" id="register-username" placeholder="Username" required />
+                    <input type="email" id="register-email" placeholder="Email" required />
+                    <input type="password" id="register-password" placeholder="Password" required />
+                    <button id="register-btn" onclick="handleRegister()">Register</button>
+                    <div id="register-error" class="error-message"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Section (hidden by default) -->
+        <div id="task-section" class="main-content" style="display:none">
+            <div class="task-header">
+                <h2>Your Tasks</h2>
+                <button class="logout-btn" onclick="handleLogout()">Logout</button>
             </div>
 
-            <!-- Task List Section -->
-            <div class="task-section">
-                <h2>Your Tasks</h2>
-                
-                <!-- Filter Buttons -->
-                <div id="filter-buttons" class="filter-bar">
-                    <button id="filter-all" class="filter-btn active" onclick="setFilter('all')">All</button>
-                    <button id="filter-active" class="filter-btn" onclick="setFilter('active')">Active</button>
-                    <button id="filter-completed" class="filter-btn" onclick="setFilter('completed')">Completed</button>
-                </div>
-                
-                <div id="task-list" class="task-list"></div>
-                <button id="refresh-tasks" class="btn-secondary">Refresh Tasks</button>
+            <!-- Filter Buttons -->
+            <div id="filter-buttons" class="filter-bar">
+                <button id="filter-all" class="filter-btn active" onclick="setFilter('all')">All</button>
+                <button id="filter-active" class="filter-btn" onclick="setFilter('active')">Active</button>
+                <button id="filter-completed" class="filter-btn" onclick="setFilter('completed')">Completed</button>
             </div>
+
+            <div id="task-list" class="task-list"></div>
+            <button id="refresh-tasks" class="btn-secondary">Refresh Tasks</button>
         </div>
     </div>
 

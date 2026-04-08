@@ -1,231 +1,178 @@
 // TaskFlow Web Client - Version 2
 
-// Use backend URL directly since we're opening file locally
-const API_BASE_URL = 'http://localhost:8000';
-const API_KEY = 'taskflow_api_key_change_this';
-
-// DOM Elements
-const chatMessages = document.getElementById('chat-messages');
-const chatInput = document.getElementById('chat-input');
-const sendBtn = document.getElementById('send-btn');
-const taskList = document.getElementById('task-list');
-const refreshTasksBtn = document.getElementById('refresh-tasks');
-const filterButtons = document.getElementById('filter-buttons');
-
+const API_BASE_URL = window.location.origin;
+let currentUser = null;
 let currentFilter = 'all';
 
-// Utility functions
-function addMessage(content, type = 'ai') {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}`;
-    messageDiv.textContent = content;
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+// Check if user is already logged in
+window.onload = function() {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (token && user) {
+        currentUser = JSON.parse(user);
+        showTaskSection();
+        loadTasks();
+    }
+};
+
+// Auth functions
+function switchTab(tab) {
+    document.getElementById('login-tab').classList.toggle('active', tab === 'login');
+    document.getElementById('register-tab').classList.toggle('active', tab === 'register');
+    document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+    document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
 }
 
-function showLoading(element) {
-    element.innerHTML = '<div class="loading">Loading...</div>';
-}
-
-function showError(element, message) {
-    element.innerHTML = `<div class="error">${message}</div>`;
-}
-
-// API functions
-async function createTask(title, description = '', priority = 0) {
+async function handleLogin() {
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
+    const errorDiv = document.getElementById('login-error');
+    
     try {
-        const response = await fetch(`${API_BASE_URL}/api/tasks/`, {
+        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-API-Key': API_KEY
-            },
-            body: JSON.stringify({ title, description, priority })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
         });
         
-        if (!response.ok) throw new Error('Failed to create task');
-        return await response.json();
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Login failed');
+        }
+        
+        const data = await response.json();
+        
+        // Save token and user
+        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        currentUser = data.user;
+        
+        showTaskSection();
+        loadTasks();
     } catch (error) {
-        console.error('Error creating task:', error);
-        throw error;
+        errorDiv.textContent = error.message;
     }
+}
+
+async function handleRegister() {
+    const username = document.getElementById('register-username').value;
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    const errorDiv = document.getElementById('register-error');
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email, password })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Registration failed');
+        }
+        
+        const data = await response.json();
+        
+        // Auto login after register
+        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        currentUser = data.user;
+        
+        showTaskSection();
+        loadTasks();
+    } catch (error) {
+        errorDiv.textContent = error.message;
+    }
+}
+
+function handleLogout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    currentUser = null;
+    showAuthSection();
+}
+
+function showAuthSection() {
+    document.getElementById('auth-section').style.display = 'block';
+    document.getElementById('task-section').style.display = 'none';
+}
+
+function showTaskSection() {
+    document.getElementById('auth-section').style.display = 'none';
+    document.getElementById('task-section').style.display = 'block';
+}
+
+// Task functions
+function getToken() {
+    return localStorage.getItem('token');
+}
+
+async function createTask(title, description = '', priority = 0) {
+    const response = await fetch(`${API_BASE_URL}/api/tasks/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({ title, description, priority })
+    });
+    
+    if (!response.ok) throw new Error('Failed to create task');
+    return await response.json();
 }
 
 async function getTasks() {
-    try {
-        let url = `${API_BASE_URL}/api/tasks/`;
-        if (currentFilter !== 'all') {
-            url += `?status_filter=${currentFilter}`;
-        }
-        
-        const response = await fetch(url, {
-            headers: { 'X-API-Key': API_KEY }
-        });
-        
-        if (!response.ok) throw new Error('Failed to fetch tasks');
-        return await response.json();
-    } catch (error) {
-        console.error('Error fetching tasks:', error);
-        throw error;
+    let url = `${API_BASE_URL}/api/tasks/`;
+    if (currentFilter !== 'all') {
+        url += `?status_filter=${currentFilter}`;
     }
-}
-
-async function updateTask(taskId, updates) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-API-Key': API_KEY
-            },
-            body: JSON.stringify(updates)
-        });
-        
-        if (!response.ok) throw new Error('Failed to update task');
-        return await response.json();
-    } catch (error) {
-        console.error('Error updating task:', error);
-        throw error;
-    }
+    
+    const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    
+    if (!response.ok) throw new Error('Failed to fetch tasks');
+    return await response.json();
 }
 
 async function completeTask(taskId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}/complete`, {
-            method: 'POST',
-            headers: { 'X-API-Key': API_KEY }
-        });
-        
-        if (!response.ok) throw new Error('Failed to complete task');
-        return await response.json();
-    } catch (error) {
-        console.error('Error completing task:', error);
-        throw error;
-    }
+    const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}/complete`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    
+    if (!response.ok) throw new Error('Failed to complete task');
+    return await response.json();
 }
 
 async function deleteTask(taskId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
-            method: 'DELETE',
-            headers: { 'X-API-Key': API_KEY }
-        });
-        
-        if (!response.ok) throw new Error('Failed to delete task');
-        return true;
-    } catch (error) {
-        console.error('Error deleting task:', error);
-        throw error;
-    }
+    const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    
+    if (!response.ok) throw new Error('Failed to delete task');
+    return true;
 }
 
 // Filter functions
-async function setFilter(filter) {
+function setFilter(filter) {
     currentFilter = filter;
-    
-    // Update button styles
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById(`filter-${filter}`).classList.add('active');
-    
-    await loadTasks();
-}
-
-// Simple AI interpretation (Version 1 - basic pattern matching)
-async function interpretUserMessage(message) {
-    message = message.toLowerCase().trim();
-    
-    // Pattern: "add task: <title>" or "add <title>"
-    if (message.startsWith('add task:') || message.startsWith('add ')) {
-        let title = message.replace('add task:', '').replace('add ', '').trim();
-        title = title.charAt(0).toUpperCase() + title.slice(1);
-        
-        let priority = 0;
-        if (message.includes('high priority')) priority = 3;
-        else if (message.includes('medium priority')) priority = 2;
-        else if (message.includes('low priority')) priority = 1;
-        
-        try {
-            const task = await createTask(title, '', priority);
-            addMessage(`✅ Task created: "${task.title}" (Priority: ${getPriorityLabel(task.priority)})`);
-            await loadTasks();
-            return;
-        } catch (error) {
-            addMessage(`❌ Error creating task: ${error.message}`);
-            return;
-        }
-    }
-    
-    // Pattern: "show tasks" or "list tasks" or "my tasks"
-    if (message.includes('show') || message.includes('list') || message.includes('my tasks')) {
-        await loadTasks();
-        const tasks = await getTasks();
-        if (tasks.length === 0) {
-            addMessage('📋 You have no tasks yet. Create one by typing "Add task: <title>"');
-        } else {
-            addMessage(`📋 You have ${tasks.length} task(s):`);
-            tasks.forEach((task, index) => {
-                const statusIcon = task.status === 'completed' ? '✅' : '⏳';
-                addMessage(`${statusIcon} ${index + 1}. ${task.title} (${getPriorityLabel(task.priority)})`);
-            });
-        }
-        return;
-    }
-    
-    // Pattern: "mark <title> as done" or "complete <title>"
-    if (message.includes('done') || message.includes('complete')) {
-        const tasks = await getTasks();
-        const activeTasks = tasks.filter(t => t.status === 'active');
-        
-        let matchedTask = null;
-        for (const task of activeTasks) {
-            if (message.includes(task.title.toLowerCase())) {
-                matchedTask = task;
-                break;
-            }
-        }
-        
-        if (matchedTask) {
-            try {
-                await completeTask(matchedTask.id);
-                addMessage(`✅ Marked "${matchedTask.title}" as completed!`);
-                await loadTasks();
-                return;
-            } catch (error) {
-                addMessage(`❌ Error completing task: ${error.message}`);
-                return;
-            }
-        } else {
-            addMessage('❓ I couldn\'t find that task. Try "Show tasks" to see your list.');
-            return;
-        }
-    }
-    
-    // Default: show help
-    addMessage(`🤔 I can help you manage tasks! Try:
-- "Add task: Buy groceries"
-- "Show my tasks"
-- "Mark Buy groceries as done"`);
-}
-
-function getPriorityLabel(priority) {
-    switch(priority) {
-        case 0: return 'None';
-        case 1: return 'Low';
-        case 2: return 'Medium';
-        case 3: return 'High';
-        default: return 'None';
-    }
+    loadTasks();
 }
 
 // UI functions
 function renderTask(tasks) {
+    const taskList = document.getElementById('task-list');
     taskList.innerHTML = '';
     
     if (tasks.length === 0) {
         const message = currentFilter === 'all' 
-            ? 'No tasks yet. Create one in the chat!'
+            ? 'No tasks yet. Create one!'
             : `No ${currentFilter} tasks found.`;
         taskList.innerHTML = `<div class="loading">${message}</div>`;
         return;
@@ -255,65 +202,44 @@ function renderTask(tasks) {
     });
 }
 
-async function handleDeleteTask(taskId) {
-    if (!confirm('Are you sure you want to delete this task?')) {
-        return;
-    }
-    
-    try {
-        await deleteTask(taskId);
-        addMessage('🗑 Task deleted');
-        await loadTasks();
-    } catch (error) {
-        addMessage(`❌ Error: ${error.message}`);
+function getPriorityLabel(priority) {
+    switch(priority) {
+        case 0: return 'None';
+        case 1: return 'Low';
+        case 2: return 'Medium';
+        case 3: return 'High';
+        default: return 'None';
     }
 }
 
 async function loadTasks() {
     try {
-        showLoading(taskList);
         const tasks = await getTasks();
         renderTask(tasks);
     } catch (error) {
-        showError(taskList, 'Error loading tasks. Please try again.');
+        console.error('Error loading tasks:', error);
     }
 }
 
 async function handleCompleteTask(taskId) {
-    try {
-        await completeTask(taskId);
-        addMessage('✅ Task marked as completed!');
-        await loadTasks();
-    } catch (error) {
-        addMessage(`❌ Error: ${error.message}`);
-    }
+    await completeTask(taskId);
+    await loadTasks();
+}
+
+async function handleDeleteTask(taskId) {
+    if (!confirm('Delete this task?')) return;
+    await deleteTask(taskId);
+    await loadTasks();
 }
 
 // Event listeners
-sendBtn.addEventListener('click', async () => {
-    const message = chatInput.value.trim();
-    if (!message) return;
-    
-    addMessage(message, 'user');
-    chatInput.value = '';
-    
-    try {
-        await interpretUserMessage(message);
-    } catch (error) {
-        addMessage(`❌ Error: ${error.message}`);
-    }
+document.getElementById('refresh-tasks').addEventListener('click', loadTasks);
+
+// Enter key support
+document.getElementById('login-password').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') document.getElementById('login-btn').click();
 });
 
-chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        sendBtn.click();
-    }
+document.getElementById('register-password').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') document.getElementById('register-btn').click();
 });
-
-refreshTasksBtn.addEventListener('click', loadTasks);
-
-window.handleCompleteTask = handleCompleteTask;
-
-// Load tasks on page load
-loadTasks();
-addMessage('👋 Welcome to TaskFlow! I can help you manage your tasks. Try "Add task: Buy groceries" to get started!');
