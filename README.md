@@ -2,236 +2,194 @@
 
 **Personal Task Manager with User Authentication** — manage your tasks with a clean, simple web interface.
 
+---
+
 ## Demo
 
-### Version 1 Features
-- Create, edit, delete tasks
-- Mark tasks as complete
-- View all tasks in a list
-- Filter tasks by status (All / Active / Completed)
-- Persistent storage in PostgreSQL
-- Web interface with task management
+### Task List View
 
-### Version 2 Features
-- Multi-user support with authentication (registration, login)
-- User-specific task lists (each user sees only their tasks)
-- JWT-based authentication
-- Priority levels for tasks (None, Low, Medium, High)
-- Due date support for tasks
-- Improved UI with action buttons and filters
+![Task List — all tasks with priority badges and action buttons](docs/screenshots/task-list.png)
+
+*All tasks with priority levels (None / Low / Medium / High), due dates, and action buttons (Complete, Edit, Delete).*
+
+### Task Creation
+
+![Create Task — form with title, description, priority, and due date](docs/screenshots/create-task.png)
+
+*Quick task creation with optional priority and due date.*
+
+### Authentication
+
+![Login / Register — user authentication forms](docs/screenshots/auth.png)
+
+*Secure registration and login — each user gets their own private task list.*
+
+---
 
 ## Product Context
 
 ### End Users
 
-- Students balancing coursework, projects, and deadlines
-- Developers who want a quick, low-friction way to track daily tasks
-- Anyone who finds traditional to-do apps too rigid or time-consuming
+- **Students** balancing coursework, projects, and deadlines
+- **Developers** who want a quick, low-friction way to track daily tasks
+- **Anyone** who finds traditional to-do apps too rigid or time-consuming
 
-### Problem That the Product Solves
+### Problem That Your Product Solves
 
-People often forget tasks or feel overwhelmed by complex task management apps. TaskFlow provides a simple, intuitive interface where you can quickly create, manage, and track your tasks without unnecessary complexity.
+People often forget tasks or feel overwhelmed by complex task management apps. Existing solutions are either too minimal (no priorities, no dates) or too heavy (hundreds of features you don't need). TaskFlow sits in the middle: simple enough to open and act in seconds, but powerful enough to prioritise, schedule, and filter.
 
-### Our Solution
+### Your Solution
 
 TaskFlow is a straightforward task manager with:
 
-- Simple web interface with task list and management
-- User authentication to keep your tasks private
-- Quick task creation with title, description, and priority
-- Easy completion tracking
-- Status filtering (All / Active / Completed)
+- A simple web interface for creating, viewing, and managing tasks
+- User authentication so each person's tasks stay private
+- Priority levels and optional due dates to keep you organised
+- Status filtering to focus on what matters right now
 
-## Implementation Overview
-
-### Architecture
-
-| Component | Technology | Role |
-|-----------|------------|------|
-| Frontend | HTML/CSS/JavaScript | Web interface for task management |
-| Backend | FastAPI | REST API for task CRUD and authentication |
-| Database | PostgreSQL | Task and user storage |
-| Auth | JWT (python-jose) | Secure token-based authentication |
-| Password Hashing | bcrypt | Secure password storage |
-| Deployment | Docker Compose | Runs all services on Ubuntu VM |
-
-### Version 1
-
-**Core feature: task creation and listing**
-
-- User can create tasks with title, description, and priority
-- Tasks stored in PostgreSQL with title, description, status, and timestamp
-- User can view all tasks in a list
-- Tasks can be marked as complete
-- Tasks can be deleted
-- All interactions work through web interface
-
-### Version 2
-
-**Improvements and additional features**
-
-- Multi-user support with authentication (registration, login)
-- User-specific task lists (JWT-based auth)
-- Edit and delete tasks
-- Filter tasks by status (active / completed)
-- Priority levels (None, Low, Medium, High)
-- Due date support
-- Dockerized deployment
-- Improved UI with task cards, action buttons, and filters
+---
 
 ## Features
 
-### Implemented (Version 1)
+### Implemented ✅
 
-- Single-user mode (no authentication) — all tasks belong to a default user.
-- Natural language task creation
-- List all tasks
-- Mark tasks as complete
-- Persistent storage in PostgreSQL
-- Web interface
+| Feature | Version |
+|---------|---------|
+| User registration & login (JWT-based auth) | v2 |
+| User-specific task lists (isolated per user) | v2 |
+| Create tasks with title, description, priority, due date | v2 |
+| Mark tasks as complete | v1 |
+| Edit tasks | v2 |
+| Delete tasks | v2 |
+| Filter by status (All / Active / Completed) | v2 |
+| Priority levels (None, Low, Medium, High) | v2 |
+| Dockerised deployment (postgres + backend + nginx) | v2 |
+| Swagger API docs (`/docs`) | v1 |
 
-### Implemented (Version 2)
+### Not Yet Implemented 🔜
 
-- Multi-user support with authentication (registration, login, user-specific task lists)
-- JWT-based authentication
-- Edit and delete tasks
-- Task prioritization (None, Low, Medium, High)
-- Due date support
-- Filter tasks by status (active / completed)
-- Improved UI with action buttons and status filters
-- Full Docker deployment
+| Feature | Notes |
+|---------|-------|
+| AI natural language task creation | — |
+| Recurring tasks | — |
+| Email / browser notifications | — |
+| Mobile client (PWA or native) | — |
+| Dark mode | — |
+| Task categories / tags | — |
 
-### Future Possibilities
-
-- AI-powered natural language task creation
-- Due date extraction from natural language
-- AI priority suggestion based on task description
-- Recurring tasks
-- Email or browser notifications
-- Mobile client
+---
 
 ## Usage
 
-### After Deployment
+1. **Register** — open the app, click **Register**, choose a username, email, and password.
+2. **Login** — enter your credentials to get your personal task dashboard.
+3. **Create a task** — click **Add Task**, fill in title (required), description (optional), priority, and due date.
+4. **Manage tasks** — mark complete, edit, or delete using the action buttons on each task card.
+5. **Filter** — use the status filter buttons (All / Active / Completed) to narrow the list.
 
-1. Open the web application in a browser
-2. Register a new account (username, email, password)
-3. Login with your credentials
-4. Create tasks by clicking "Add Task" button
-5. View your tasks in the list
-6. Mark tasks complete, edit, or delete them
+### API Quick Reference
 
-### API Endpoints
-
-**Authentication:**
-- `POST /api/auth/register` — Register a new user
-- `POST /api/auth/login` — Login and get JWT token
-
-**Tasks (requires JWT token):**
-- `GET /api/tasks/` — List all your tasks (optional: `?status_filter=active`)
-- `POST /api/tasks/` — Create a new task
-- `PATCH /api/tasks/{id}` — Update a task
-- `POST /api/tasks/{id}/complete` — Mark task as complete
-- `DELETE /api/tasks/{id}` — Delete a task
-
-### Example Task
-
-```json
-{
-  "title": "Finish lab report",
-  "description": "Complete the lab report for Software Engineering Toolkit course",
-  "priority": 2,
-  "due_date": "2026-04-10T18:00:00"
-}
 ```
+POST   /api/auth/register   — register {"username": "...", "email": "...", "password": "..."}
+POST   /api/auth/login      — login    {"username": "...", "password": "..."}  → returns JWT
+GET    /api/tasks/          — list tasks (Bearer token required)
+POST   /api/tasks/          — create task (Bearer token required)
+PATCH  /api/tasks/{id}      — update task (Bearer token required)
+POST   /api/tasks/{id}/complete — mark complete (Bearer token required)
+DELETE /api/tasks/{id}      — delete task (Bearer token required)
+```
+
+Swagger UI is available at `http://<host>/docs` when the backend is running.
+
+---
 
 ## Deployment
 
 ### VM Operating System
 
-**Ubuntu 24.04** (same as university VMs)
+**Ubuntu 24.04** (same as the university VMs; works on any modern Linux with Docker).
 
-### Required Software on the VM
+### What Should Be Installed on the VM
 
-- Git
-- Docker Engine
-- Docker Compose plugin
-- curl (optional, for testing)
+| Software | Installation |
+|----------|-------------|
+| **Git** | `sudo apt update && sudo apt install -y git` |
+| **Docker Engine** | Follow [official Docker install guide](https://docs.docker.com/engine/install/ubuntu/) |
+| **Docker Compose plugin** | `sudo apt install -y docker-compose-plugin` |
 
-### Environment Variables
+### Step-by-Step Deployment Instructions
 
-Create `.env.docker.secret` in the project root:
-
-```env
-# Database
-POSTGRES_DB=taskflow
-POSTGRES_USER=taskflow
-POSTGRES_PASSWORD=your_secure_password_here
-
-# Backend
-DATABASE_URL=postgresql://taskflow:your_secure_password_here@postgres:5432/taskflow
-JWT_SECRET_KEY=your_jwt_secret_key_change_this_in_production
-```
-
-### Prerequisites
-
-- Ubuntu 24.04 VM
-- Docker and Docker Compose installed
-- Git installed
-
-### Deployment Steps
-
-1. Clone the repository on the VM:
+#### 1. Clone the repository
 
 ```bash
 git clone https://github.com/Berezhnoy-Sergey/se-toolkit-hackathon-Berezhnoy-Sergey.git
 cd se-toolkit-hackathon-Berezhnoy-Sergey
 ```
 
-2. Create the environment file:
+#### 2. Configure environment variables
 
 ```bash
-cp .env.docker.secret .env
-```
-
-3. Edit environment variables:
-
-```bash
+cp .env.example .env
 nano .env
 ```
 
-Set secure passwords for `POSTGRES_PASSWORD` and `JWT_SECRET_KEY`.
+Edit at minimum these values:
 
-4. Build and start all services:
+```env
+POSTGRES_PASSWORD=<your_secure_database_password>
+JWT_SECRET_KEY=<your_secure_jwt_secret>
+```
+
+> ⚠️ **Never commit `.env` to Git.** It is already in `.gitignore`.
+
+#### 3. Build and start all services
 
 ```bash
 docker compose up --build -d
 ```
 
-5. Open the application:
+This starts three containers:
+
+| Service | Internal port | External port |
+|---------|--------------|---------------|
+| PostgreSQL | 5432 | not exposed |
+| Backend (FastAPI) | 8000 | not exposed |
+| Nginx (web client) | 80 | **42002** |
+
+#### 4. Open the application
 
 ```
 http://<YOUR_VM_IP>:42002
 ```
 
-6. View logs if needed:
+Register a new account and start adding tasks.
+
+#### 5. Useful commands
 
 ```bash
+# View logs
 docker compose logs -f
-```
 
-7. Stop the application:
+# View specific service logs
+docker compose logs -f backend
 
-```bash
+# Stop all services
 docker compose down
+
+# Rebuild after code changes
+docker compose up --build -d
+
+# Reset database (destructive!)
+docker compose down -v
 ```
 
-## Repository Notes
+#### 6. Access Swagger API docs
 
-- Repository name: `se-toolkit-hackathon-Berezhnoy-Sergey`
-- License: MIT
-- All code pushed to GitHub
-- Final submission includes deployed Version 2 accessible for demonstration
+```
+http://<YOUR_VM_IP>:42002/docs
+```
+
+---
 
 ## Project Structure
 
@@ -241,45 +199,24 @@ se-toolkit-hackathon-Berezhnoy-Sergey/
 │   ├── Dockerfile.simple      # Simple Dockerfile for backend
 │   ├── requirements.txt       # Python dependencies
 │   └── src/lms_backend/
-│       ├── models/            # Task and User models
+│       ├── models/            # Task and User SQLAlchemy models
 │       ├── routers/           # API endpoints (tasks, auth)
-│       ├── auth.py            # JWT authentication
-│       ├── database.py        # Database setup
-│       ├── main.py            # FastAPI app
-│       └── settings.py        # Configuration
+│       ├── auth.py            # JWT authentication helpers
+│       ├── database.py        # Database engine & session
+│       ├── main.py            # FastAPI application entry
+│       └── settings.py        # Configuration from env vars
 ├── web-client/
-│   ├── index.html             # Web interface
+│   ├── index.html             # Main HTML page
 │   ├── style.css              # Styling
-│   ├── app.js                 # Frontend logic
-│   └── nginx.conf             # Nginx configuration
-├── docker-compose.yml         # Docker services
-├── .env.docker.secret         # Environment variables template
+│   ├── app.js                 # Frontend logic & API calls
+│   └── nginx.conf             # Nginx reverse-proxy config
+├── docker-compose.yml         # postgres + backend + nginx
+├── .env.example               # Environment variables template
+├── .gitignore
+├── LICENSE                    # MIT License
 └── README.md                  # This file
 ```
 
-## Development
+## License
 
-### Local Development (without Docker)
-
-```bash
-# Create virtual environment
-python -m venv .venv
-source .venv/Scripts/activate  # On Windows
-
-# Install dependencies
-pip install -r backend/requirements.txt
-
-# Start PostgreSQL
-docker compose up postgres -d
-
-# Run backend
-cd backend/src
-uvicorn lms_backend.main:app --host 0.0.0.0 --port 8000 --reload
-
-# Open web interface
-# Open web-client/index.html in browser
-```
-
-### API Documentation
-
-When backend is running, visit: `http://localhost:8000/docs`
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.

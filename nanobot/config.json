@@ -1,0 +1,29 @@
+{
+  "agents": {
+    "defaults": {
+      "model": "meta-llama/llama-3.3-70b-instruct:free"
+    }
+  },
+  "providers": {
+    "custom": {
+      "apiKey": "",
+      "apiBase": "https://openrouter.ai/api/v1"
+    }
+  },
+  "gateway": {
+    "host": "0.0.0.0",
+    "port": 18790
+  },
+  "tools": {
+    "mcpServers": {
+      "lms": {
+        "command": "python",
+        "args": ["-m", "mcp_lms"],
+        "env": {
+          "NANOBOT_LMS_BACKEND_URL": "",
+          "NANOBOT_LMS_API_KEY": ""
+        }
+      }
+    }
+  }
+}
